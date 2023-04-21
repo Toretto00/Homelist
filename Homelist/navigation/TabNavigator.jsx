@@ -10,20 +10,17 @@ import { COLORS } from '../variables/color';
 
 const Tab = createBottomTabNavigator();
 
+MaterialCommunityIcons.loadFont();
+
 export default function TabNavigator() {
     return (
         <Tab.Navigator 
             initialRouteName='home'
-            screenOptions={
-                {headerShown: false}
-            }
-            tabBarOptions={{
-                activeTintColor: COLORS.primary,
-                activeTabStyle: {
-                    fontSize: 14,
-                    fontWeight: 'bold',
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: COLORS.primary,
                 }
-            }}>
+            }>
             <Tab.Screen name='home' 
                         component={Home}
                         options={
