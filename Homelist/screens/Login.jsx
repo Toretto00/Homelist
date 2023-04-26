@@ -9,7 +9,7 @@ import api from '../api/client';
 export default function Login({navigation}) {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [hide, setHide] = useState(true);
+    const [hidePassword, setHidePassword] = useState(true);
     const [disabledLoginBtn, setdisableLoginBtn] = useState(true);
 
     useEffect(() => {
@@ -40,7 +40,6 @@ export default function Login({navigation}) {
     return(
         <KeyboardAvoidingView 
             style={{ flex: 1 }}
-            //keyboardVerticalOffset={80}
             >
             <ScrollView style={styles.container}>
                 <View style={styles.flexGrow0}>
@@ -60,13 +59,13 @@ export default function Login({navigation}) {
                                 mode='outlined' 
                                 activeOutlineColor={COLORS.primary}
                                 style={styles.margin}
-                                secureTextEntry={hide?true:false}
+                                secureTextEntry={hidePassword?true:false}
                                 value={password}
                                 onChangeText={(password) => {
                                     setPassword(password);
                                 }}
                                 right={
-                                    <TextInput.Icon icon={hide ? 'eye':'eye-off'} onPress={()=>setHide(!hide)}/>
+                                    <TextInput.Icon icon={hidePassword ? 'eye':'eye-off'} onPress={()=>{setHidePassword(!hidePassword)}}/>
                                 }
                     />
                     <TouchableOpacity style={styles.margin}>
