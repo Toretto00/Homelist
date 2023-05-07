@@ -4,10 +4,10 @@
     "slug": "Homelist",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Homelist_logo.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash_logo.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,12 +19,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Homelist_logo_1024px.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./assets/Homelist_logo.png"
+      "favicon": "./assets/favicon.png"
     }
   }
 }

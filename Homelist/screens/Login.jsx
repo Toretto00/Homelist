@@ -49,7 +49,7 @@ export default function Login({navigation}) {
                     <TextInput label="Email"
                                 mode='outlined' 
                                 activeOutlineColor={COLORS.primary}
-                                style={styles.margin}
+                                style={[styles.margin, styles.backgroundTransparent]}
                                 value={userName}
                                 onChangeText={(userName) => {
                                     setUserName(userName);
@@ -58,7 +58,7 @@ export default function Login({navigation}) {
                     <TextInput label="Password" 
                                 mode='outlined' 
                                 activeOutlineColor={COLORS.primary}
-                                style={styles.margin}
+                                style={[styles.margin, styles.backgroundTransparent]}
                                 secureTextEntry={hidePassword?true:false}
                                 value={password}
                                 onChangeText={(password) => {
@@ -136,6 +136,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.white,
         padding: 10,
+    },
+    backgroundTransparent: {
+        backgroundColor: COLORS.transparent,
     },
     margin: {
         marginTop: 10,

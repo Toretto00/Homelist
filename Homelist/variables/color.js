@@ -6,4 +6,7 @@ export const COLORS = {
     redGoogle: '#EA4335',
     redRequire: '#ff0000',
     orange: '#E69138',
+    transparent: 'transparent',
+    text_gray: '#838383',
+    orange: "#ff6600",
 };
