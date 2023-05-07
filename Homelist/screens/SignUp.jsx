@@ -75,6 +75,7 @@ export default function SignUp({navigation}) {
                         mode='outlined'
                         placeholder='First Name'
                         activeOutlineColor={COLORS.primary}
+                        style={styles.backgroundTransparent}
                         value={firstName}
                         onChangeText={(firstName) => setFirstName(firstName)}
                     />
@@ -88,6 +89,7 @@ export default function SignUp({navigation}) {
                         mode='outlined'
                         placeholder='Last Name'
                         activeOutlineColor={COLORS.primary}
+                        style={styles.backgroundTransparent}
                         value={lastName}
                         onChangeText={(lastName) => setLastName(lastName)}
                     />
@@ -102,6 +104,7 @@ export default function SignUp({navigation}) {
                     mode='outlined'
                     placeholder='Username'
                     activeOutlineColor={COLORS.primary}
+                    style={styles.backgroundTransparent}
                     value={userName}
                     onChangeText={(userName) => setUserName(userName)}
                 />
@@ -115,6 +118,7 @@ export default function SignUp({navigation}) {
                     mode='outlined'
                     placeholder='Email'
                     activeOutlineColor={COLORS.primary}
+                    style={styles.backgroundTransparent}
                     value={email}
                     keyboardType='email-address'
                     onChangeText={(email) => setEmail(email)}
@@ -129,6 +133,7 @@ export default function SignUp({navigation}) {
                     mode='outlined'
                     placeholder='(+84) 123 456 789'
                     activeOutlineColor={COLORS.primary}
+                    style={styles.backgroundTransparent}
                     value={phoneNumber}
                     keyboardType='phone-pad'
                     onChangeText={(phoneNumber) => setPhoneNumber(phoneNumber)}
@@ -143,6 +148,7 @@ export default function SignUp({navigation}) {
                     mode='outlined'
                     placeholder='Password'
                     activeOutlineColor={COLORS.primary}
+                    style={styles.backgroundTransparent}
                     value={password}
                     secureTextEntry={hidePassword?true:false}
                     onChangeText={(password) => setPassword(password)}
@@ -152,7 +158,7 @@ export default function SignUp({navigation}) {
                 />
             </View>
             <View style={[styles.rowFlexDirection, styles.termContainer]}>
-                <Checkbox status={ checkTerm ? 'checked' : 'unchecked'}
+                <Checkbox.Android status={ checkTerm ? 'checked' : 'unchecked'}
                     onPress={() => setCheckTerm(!checkTerm)}
                     color={COLORS.primary}
                 />
@@ -184,6 +190,9 @@ const styles = StyleSheet.create({
       flex: 1,
       backgroundColor: '#fff',
       padding: 4,
+    },
+    backgroundTransparent: {
+        backgroundColor: COLORS.transparent,
     },
     flex1: {
         flex: 1,
