@@ -28,10 +28,10 @@ export default function HomeNavigator() {
             <Stack.Screen name="Drawer navigator" component={DrawerNavigator} options={{headerShown: false}}/>
             <Stack.Screen name="Log in" component={Login}/>
             <Stack.Screen name="Sign up" component={SignUp}/>
-            <Stack.Screen name="Edit profile" component={EditProfile}/>
+            <Stack.Screen name="Edit profile" component={EditProfile} options={{headerShown: false}}/>
             <Stack.Screen name="My properties" component={MyProperties}/>
             <Stack.Screen name="Favorites" component={Favorites}/>
-            <Stack.Screen name="Account setting" component={AccountSetting}/>
+            <Stack.Screen name="Settings" component={AccountSetting}/>
             <Stack.Screen name="Inbox" component={Inbox}/>
         </Stack.Navigator>
     );
