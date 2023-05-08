@@ -12,9 +12,17 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 const {height: screenHeight, width: screenWidth} = Dimensions.get('screen');
 
+export const handleLogin = () => {
+  //isLogin = false;
+};
+
 export default function Account({navigation}) {
   const [isLogin, setIsLogin] = useState(true);
   const [messages, setMessages] = useState(2);
+
+  // function handleLogin(){
+  //   setIsLogin(false);
+  // };
 
   return (
     <View style={styles.container}>
@@ -68,7 +76,7 @@ export default function Account({navigation}) {
                         textColor={COLORS.text_gray} 
                         compact={true} 
                         contentStyle={{flexDirection: 'column', width: screenWidth/4}}
-                        onPress={() => navigation.navigate('Account setting')} >
+                        onPress={() => navigation.navigate('Settings')} >
                   <Text>Setting</Text>
                 </Button>
               </View>
