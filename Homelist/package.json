@@ -17,6 +17,7 @@
     "expo": "~48.0.11",
     "expo-status-bar": "~1.4.4",
     "expo-updates": "~0.16.4",
+    "html-entities": "^2.3.3",
     "react": "18.2.0",
     "react-native": "0.71.6",
     "react-native-gesture-handler": "~2.9.0",
