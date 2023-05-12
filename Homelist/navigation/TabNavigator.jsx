@@ -19,6 +19,7 @@ export default function TabNavigator() {
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: COLORS.primary,
+                tabBarHideOnKeyboard: true,
                 }
             }>
             <Tab.Screen name='home' 
