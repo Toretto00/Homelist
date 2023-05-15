@@ -10,4 +10,5 @@ export const COLORS = {
     transparent: 'transparent',
     text_gray: '#838383',
     orange: "#ff6600",
+    bg_light: "#f9f9f9",
 };

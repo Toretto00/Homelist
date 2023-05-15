@@ -13,6 +13,7 @@ import Inbox from '../screens/Inbox';
 import TabNavigator from "./TabNavigator";
 import DrawerNavigator from "./DrawerNavigator";
 import { COLORS } from '../variables/color';
+import ListingDetail from '../screens/ListingDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export default function HomeNavigator() {
             <Stack.Screen name="Favorites" component={Favorites}/>
             <Stack.Screen name="Settings" component={AccountSetting}/>
             <Stack.Screen name="Inbox" component={Inbox}/>
+            <Stack.Screen name="Listing Detail" component={ListingDetail} options={{headerShown: false}}/>
         </Stack.Navigator>
     );
 }
