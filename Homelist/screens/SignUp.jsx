@@ -176,7 +176,7 @@ export default function SignUp({navigation}) {
             <Button mode='contained'
                     buttonColor={COLORS.primary}
                     textColor={COLORS.white}
-                    disabled={false}
+                    disabled={disabledSignUpBtn}
                     onPress={handleSignUp}
             >
                 Sign Up
