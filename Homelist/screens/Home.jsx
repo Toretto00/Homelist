@@ -41,21 +41,14 @@ export default function Home({ navigation }) {
   const [categoriesData, setCategoriesData] = useState([]);
   const [initial, setInitial] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchData, setSearchData] = useState(() => {
+    return { search: "", categories: "" };
+  });
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     handleSearchInput();
   }, [searchInput]);
-
-  // useEffect(() => {
-  //   if (!initial) return;
-  //   handleLoadListingsData();
-  //   if (listingsData !== null) setIsLoading(false);
-  // }, [initial]);
-
-  // useEffect(() => {
-  //   if (!initial) return;
-  //   handleLoadCategoriesData();
-  // }, [initial]);
 
   useEffect(() => {
     if (!initial) return;
@@ -70,13 +63,16 @@ export default function Home({ navigation }) {
   }
 
   function handleLoadListingsData() {
+    const args = searchData;
     api
-      .get("listings")
+      .get("listings", args)
       .then((res) => {
         if (res.ok) {
+          if (refreshing) setRefreshing(false);
           setListingsData(res.data.data);
         }
         if (initial) setInitial(false);
+        if (isLoading) setIsLoading(false);
       })
       .catch((error) => {
         console.log(error);
@@ -105,73 +101,63 @@ export default function Home({ navigation }) {
     navigation.navigate("Listing Detail", { listingId });
   }
 
-  const renderCategoriesList = useCallback(({ item }) => (
-    <TouchableOpacity style={styles.categoriesBtn}>
-      <TouchableOpacity style={styles.categoriesBtnImage}>
-        <CategoryIcon
-          iconName={item.icon.class}
-          iconColor={COLORS.primary}
-          iconSize={18}
-        />
-      </TouchableOpacity>
-      <Text style={styles.textGray}>{decode(item.name)}</Text>
-    </TouchableOpacity>
-  ));
+  function handleSelectCategory(item) {
+    setSearchData((searchData) => ({
+      ...searchData,
+      categories: item.term_id,
+    }));
+    setRefreshing(true);
+    setInitial(true);
+    setIsLoading(true);
+  }
 
-  const renderItemList = useCallback(({ item }) => (
-    <Card
-      style={styles.cardContainer}
-      onPress={() => handleListingDetail(item.listing_id)}
-    >
-      <Card.Cover
-        source={
-          item?.images?.length
-            ? {
-                uri: item.images[0].sizes.full.src,
-              }
-            : require("../assets/icon.png")
-        }
-      />
-      <Card.Content style={styles.margin8}>
-        <Button
-          mode="Contained"
-          textColor={COLORS.primary}
-          style={{
-            backgroundColor: COLORS.bg_primary,
-            justifyContent: "flex-start",
-            borderRadius: 4,
-          }}
-        >
-          {decode(item.categories[0].name)}
-        </Button>
-      </Card.Content>
-      <Card.Title
-        title={decode(item.title)}
-        titleNumberOfLines={2}
-        titleStyle={styles.bold}
-      />
-      <Card.Content
-        style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}
+  function handleSearch() {
+    if (searchInput !== "") {
+      setSearchData((searchData) => ({
+        ...searchData,
+        search: searchInput,
+      }));
+      setRefreshing(true);
+      setInitial(true);
+      setIsLoading(true);
+    }
+  }
+
+  function handleReset() {
+    setSearchData((searchData) => ({
+      search: "",
+      categories: "",
+    }));
+    setRefreshing(true);
+    setInitial(true);
+    setIsLoading(true);
+  }
+
+  const renderCategoriesList = useCallback(
+    ({ item }) => (
+      <TouchableOpacity
+        style={styles.categoriesBtn}
+        onPress={() => handleSelectCategory(item)}
       >
-        <Image source={require("../assets/pin.png")} />
-        <Text style={styles.textGray}>
-          {item.contact.locations.map((_loc) => _loc.name).join(", ")}
-        </Text>
-      </Card.Content>
-      <Card.Content style={{ marginTop: 4 }}>
-        <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-          {decode(item.price)}$
-        </Text>
-      </Card.Content>
-    </Card>
-  ));
+        <View style={styles.categoriesBtnImage}>
+          <CategoryIcon
+            iconName={item.icon.class}
+            iconColor={COLORS.primary}
+            iconSize={18}
+          />
+        </View>
+        <Text style={styles.textGray}>{decode(item.name)}</Text>
+      </TouchableOpacity>
+    ),
+    [refreshing]
+  );
 
-  const renderItemTextList = useCallback(({ item }) => (
-    <Card
-      style={styles.cardTextContainer}
-      onPress={() => handleListingDetail(item.listing_id)}
-    >
-      <View style={styles.cardTextContainer}>
+  const renderItemList = useCallback(
+    ({ item }) => (
+      <Card
+        style={styles.cardContainer}
+        onPress={() => handleListingDetail(item.listing_id)}
+      >
         <Card.Cover
           source={
             item?.images?.length
@@ -180,51 +166,109 @@ export default function Home({ navigation }) {
                 }
               : require("../assets/icon.png")
           }
-          style={{ width: ((screenWidth - 16) / 5) * 2 }}
         />
-        <View style={{ width: ((screenWidth - 16) / 5) * 3 }}>
-          <Card.Content style={styles.margin8}>
-            <Button
-              mode="Contained"
-              textColor={COLORS.primary}
+        <Card.Content style={styles.margin8}>
+          <Button
+            mode="Contained"
+            textColor={COLORS.primary}
+            style={{
+              backgroundColor: COLORS.bg_primary,
+              justifyContent: "flex-start",
+              borderRadius: 4,
+            }}
+          >
+            {decode(item.categories[0].name)}
+          </Button>
+        </Card.Content>
+        <Card.Title
+          title={decode(item.title)}
+          titleNumberOfLines={2}
+          titleStyle={styles.bold}
+        />
+        <Card.Content
+          style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}
+        >
+          <Image source={require("../assets/pin.png")} />
+          <Text style={styles.textGray}>
+            {item.contact.locations.map((_loc) => _loc.name).join(", ")}
+          </Text>
+        </Card.Content>
+        <Card.Content style={{ marginTop: 4 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+            {decode(item.price)}$
+          </Text>
+        </Card.Content>
+      </Card>
+    ),
+    [refreshing]
+  );
+
+  const renderItemTextList = useCallback(
+    ({ item }) => (
+      <Card
+        style={styles.cardTextContainer}
+        onPress={() => handleListingDetail(item.listing_id)}
+      >
+        <View style={styles.cardTextContainer}>
+          <Card.Cover
+            source={
+              item?.images?.length
+                ? {
+                    uri: item.images[0].sizes.full.src,
+                  }
+                : require("../assets/icon.png")
+            }
+            style={{ width: ((screenWidth - 16) / 5) * 2 }}
+          />
+          <View style={{ width: ((screenWidth - 16) / 5) * 3 }}>
+            <Card.Content style={styles.margin8}>
+              <Button
+                mode="Contained"
+                textColor={COLORS.primary}
+                style={{
+                  backgroundColor: COLORS.bg_primary,
+                  justifyContent: "flex-start",
+                  borderRadius: 4,
+                }}
+              >
+                {decode(item.categories[0].name)}
+              </Button>
+            </Card.Content>
+            <Card.Title
+              title={decode(item.title)}
+              titleNumberOfLines={2}
+              titleStyle={styles.bold}
+            />
+            <Card.Content
               style={{
-                backgroundColor: COLORS.bg_primary,
-                justifyContent: "flex-start",
-                borderRadius: 4,
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 4,
               }}
             >
-              {decode(item.categories[0].name)}
-            </Button>
-          </Card.Content>
-          <Card.Title
-            title={decode(item.title)}
-            titleNumberOfLines={2}
-            titleStyle={styles.bold}
-          />
-          <Card.Content
-            style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}
-          >
-            <Image source={require("../assets/pin.png")} />
-            <Text style={styles.textGray}>
-              {item.contact.locations.map((_loc) => _loc.name).join(", ")}
-            </Text>
-          </Card.Content>
-          <Card.Content style={{ marginTop: 4, alignItems: "flex-end" }}>
-            <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-              {decode(item.price)}$
-            </Text>
-          </Card.Content>
-          <Card.Content>
-            <Text style={styles.textGray} numberOfLines={2}>
-              {item.custom_fields[0].options.choices
-                .map((name) => name.name)
-                .join("/ ")}
-            </Text>
-          </Card.Content>
+              <Image source={require("../assets/pin.png")} />
+              <Text style={styles.textGray}>
+                {item.contact.locations.map((_loc) => _loc.name).join(", ")}
+              </Text>
+            </Card.Content>
+            <Card.Content style={{ marginTop: 4, alignItems: "flex-end" }}>
+              <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+                {decode(item.price)}$
+              </Text>
+            </Card.Content>
+            <Card.Content>
+              <Text style={styles.textGray} numberOfLines={2}>
+                {item.custom_fields[0].options.choices
+                  .map((name) => name.name)
+                  .join("/ ")}
+              </Text>
+            </Card.Content>
+          </View>
         </View>
-      </View>
-    </Card>
-  ));
+      </Card>
+    ),
+    [refreshing]
+  );
 
   return (
     <View style={styles.container}>
@@ -260,6 +304,9 @@ export default function Home({ navigation }) {
                       style={styles.margin8}
                     />
                   )}
+                  onPress={() => {
+                    handleSearch();
+                  }}
                 />
               }
               right={
@@ -287,11 +334,13 @@ export default function Home({ navigation }) {
             />
           </View>
           <Divider />
-          <View style={styles.categoriesTitle}>
+          <View style={[styles.categoriesTitle, { height: 40 }]}>
             <Text style={styles.bold}>Top Categories</Text>
-            <Button mode="text" textColor={COLORS.primary}>
-              See all
-            </Button>
+            {(searchData.search !== "" || searchData.categories !== "") && (
+              <Button mode="text" textColor={COLORS.primary} onPress={() => handleReset()}>
+                Reset
+              </Button>
+            )}
           </View>
           <SafeAreaView style={{ height: 100 }}>
             <FlatList
@@ -302,7 +351,19 @@ export default function Home({ navigation }) {
             />
           </SafeAreaView>
           <View style={styles.adsContent}>
-            <Text style={styles.bold}>Lastest Ads</Text>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.bold}>Lastest Ads</Text>
+              {searchData.categories !== "" && (
+                <Text style={{ marginLeft: 4 }}>
+                  (
+                  {categoriesData.map((item) => {
+                    if (item.term_id === searchData.categories)
+                      return item.name;
+                  })}
+                  )
+                </Text>
+              )}
+            </View>
             <View style={{ flexDirection: "row" }}>
               <ToggleButton.Group
                 onValueChange={(value) => setIsChech(value)}
@@ -329,6 +390,7 @@ export default function Home({ navigation }) {
                 horizontal={false}
                 numColumns={2}
                 renderItem={renderItemList}
+                refreshing={refreshing}
               />
             ) : (
               <FlatList
@@ -337,6 +399,7 @@ export default function Home({ navigation }) {
                 horizontal={false}
                 numColumns={1}
                 renderItem={renderItemTextList}
+                refreshing={refreshing}
               />
             )}
           </SafeAreaView>
