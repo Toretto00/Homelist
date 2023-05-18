@@ -18,6 +18,7 @@ import {
   Avatar,
   ToggleButton,
   Card,
+  ActivityIndicator,
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -39,20 +40,34 @@ export default function Home({ navigation }) {
   const [listingsData, setListingsData] = useState([]);
   const [categoriesData, setCategoriesData] = useState([]);
   const [initial, setInitial] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     handleSearchInput();
   }, [searchInput]);
 
-  useEffect(() => {
-    if (!initial) return;
-    handleLoadListingsData();
-  }, [initial]);
+  // useEffect(() => {
+  //   if (!initial) return;
+  //   handleLoadListingsData();
+  //   if (listingsData !== null) setIsLoading(false);
+  // }, [initial]);
+
+  // useEffect(() => {
+  //   if (!initial) return;
+  //   handleLoadCategoriesData();
+  // }, [initial]);
 
   useEffect(() => {
     if (!initial) return;
-    handleLoadCategoriesData();
+    getData();
   }, [initial]);
+
+  function getData() {
+    handleLoadCategoriesData();
+    handleLoadListingsData();
+    if (listingsData !== null && categoriesData !== null)
+      setTimeout(() => setIsLoading(false), 500);
+  }
 
   function handleLoadListingsData() {
     api
@@ -154,7 +169,7 @@ export default function Home({ navigation }) {
   const renderItemTextList = useCallback(({ item }) => (
     <Card
       style={styles.cardTextContainer}
-      onPress={() => handleListingDetail()}
+      onPress={() => handleListingDetail(item.listing_id)}
     >
       <View style={styles.cardTextContainer}>
         <Card.Cover
@@ -214,109 +229,119 @@ export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <Header />
-      <View style={styles.homeAction}>
-        <Button
-          mode="outlined"
-          textColor={COLORS.black}
-          style={styles.locationBtn}
-        >
-          <Image source={require("../assets/pin.png")} />
-          <Text>Location</Text>
-        </Button>
-        <TextInput
-          mode="outlined"
-          placeholder="Search..."
-          activeOutlineColor={COLORS.primary}
-          left={
-            <TextInput.Icon
-              icon={() => (
-                <Icon
-                  name="magnify"
-                  color={COLORS.primary}
-                  size={24}
-                  style={styles.margin8}
+      {isLoading ? (
+        <ActivityIndicator
+          color={COLORS.primary}
+          style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
+          size="large"
+        />
+      ) : (
+        <>
+          <View style={styles.homeAction}>
+            <Button
+              mode="outlined"
+              textColor={COLORS.black}
+              style={styles.locationBtn}
+            >
+              <Image source={require("../assets/pin.png")} />
+              <Text>Location</Text>
+            </Button>
+            <TextInput
+              mode="outlined"
+              placeholder="Search..."
+              activeOutlineColor={COLORS.primary}
+              left={
+                <TextInput.Icon
+                  icon={() => (
+                    <Icon
+                      name="magnify"
+                      color={COLORS.primary}
+                      size={24}
+                      style={styles.margin8}
+                    />
+                  )}
                 />
-              )}
-            />
-          }
-          right={
-            isSearch ? (
-              <TextInput.Icon
-                icon={() => (
-                  <Icon
-                    name="close"
-                    color={COLORS.primary}
-                    size={24}
-                    style={styles.margin8}
+              }
+              right={
+                isSearch ? (
+                  <TextInput.Icon
+                    icon={() => (
+                      <Icon
+                        name="close"
+                        color={COLORS.primary}
+                        size={24}
+                        style={styles.margin8}
+                      />
+                    )}
+                    onPress={() => setSearchInput("")}
                   />
-                )}
-                onPress={() => setSearchInput("")}
+                ) : (
+                  <></>
+                )
+              }
+              style={[styles.transparentColor, styles.searchInput]}
+              value={searchInput}
+              onChangeText={(value) => {
+                setSearchInput(value);
+              }}
+            />
+          </View>
+          <Divider />
+          <View style={styles.categoriesTitle}>
+            <Text style={styles.bold}>Top Categories</Text>
+            <Button mode="text" textColor={COLORS.primary}>
+              See all
+            </Button>
+          </View>
+          <SafeAreaView style={{ height: 100 }}>
+            <FlatList
+              data={categoriesData}
+              renderItem={renderCategoriesList}
+              horizontal={true}
+              showsHorizontalScrollIndicator={false}
+            />
+          </SafeAreaView>
+          <View style={styles.adsContent}>
+            <Text style={styles.bold}>Lastest Ads</Text>
+            <View style={{ flexDirection: "row" }}>
+              <ToggleButton.Group
+                onValueChange={(value) => setIsChech(value)}
+                value={isCheck}
+              >
+                <ToggleButton
+                  icon="square"
+                  value="square"
+                  iconColor={COLORS.primary}
+                ></ToggleButton>
+                <ToggleButton
+                  icon="format-list-text"
+                  value="text"
+                  iconColor={COLORS.primary}
+                ></ToggleButton>
+              </ToggleButton.Group>
+            </View>
+          </View>
+          <SafeAreaView style={styles.container}>
+            {isCheck === "square" ? (
+              <FlatList
+                data={listingsData}
+                key={"_"}
+                horizontal={false}
+                numColumns={2}
+                renderItem={renderItemList}
               />
             ) : (
-              <></>
-            )
-          }
-          style={[styles.transparentColor, styles.searchInput]}
-          value={searchInput}
-          onChangeText={(value) => {
-            setSearchInput(value);
-          }}
-        />
-      </View>
-      <Divider />
-      <View style={styles.categoriesTitle}>
-        <Text style={styles.bold}>Top Categories</Text>
-        <Button mode="text" textColor={COLORS.primary}>
-          See all
-        </Button>
-      </View>
-      <SafeAreaView style={{ height: 100 }}>
-        <FlatList
-          data={categoriesData}
-          renderItem={renderCategoriesList}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
-        />
-      </SafeAreaView>
-      <View style={styles.adsContent}>
-        <Text style={styles.bold}>Lastest Ads</Text>
-        <View style={{ flexDirection: "row" }}>
-          <ToggleButton.Group
-            onValueChange={(value) => setIsChech(value)}
-            value={isCheck}
-          >
-            <ToggleButton
-              icon="square"
-              value="square"
-              iconColor={COLORS.primary}
-            ></ToggleButton>
-            <ToggleButton
-              icon="format-list-text"
-              value="text"
-              iconColor={COLORS.primary}
-            ></ToggleButton>
-          </ToggleButton.Group>
-        </View>
-      </View>
-      <SafeAreaView style={styles.container}>
-        {isCheck === "square" ? (
-          <FlatList
-            data={listingsData}
-            key={"_"}
-            horizontal={false}
-            numColumns={2}
-            renderItem={renderItemList}
-          />
-        ) : (
-          <FlatList
-            data={listingsData}
-            key={"#"}
-            horizontal={false}
-            numColumns={1}
-            renderItem={renderItemTextList}
-          />
-        )}
-      </SafeAreaView>
+              <FlatList
+                data={listingsData}
+                key={"#"}
+                horizontal={false}
+                numColumns={1}
+                renderItem={renderItemTextList}
+              />
+            )}
+          </SafeAreaView>
+        </>
+      )}
     </View>
   );
 }

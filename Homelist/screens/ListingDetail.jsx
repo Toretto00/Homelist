@@ -82,7 +82,6 @@ export default function ListingDetail({ route, navigation }) {
         }
       });
     }
-    console.log(customField);
     return customField;
   }
 

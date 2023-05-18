@@ -9,7 +9,7 @@ import { COLORS } from '../variables/color';
 export default function LoginRequest({navigation}){
     return(
         <View style={styles.loginReuestContainer}>
-            <Image style={styles.image} source={require('../assets/user-undefined.png')}/>
+            <Image source={require('../assets/user-undefined.png')}/>
             <Text style={styles.text}>Currently you're not logged in</Text>
             <Text style={styles.text}>Please log in or sign up for better exprience</Text>
             <Button mode='contain' 
@@ -25,16 +25,9 @@ export default function LoginRequest({navigation}){
 
 const styles = StyleSheet.create({
     loginReuestContainer: {
-        display: 'flex',
-        height: '100%',
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    image: {
-        height: 128,
-        width: 128,
-        marginBottom: 20,
-        marginTop: 20,
     },
     text: {
         fontSize: 16,
