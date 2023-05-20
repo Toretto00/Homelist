@@ -10,6 +10,7 @@ import {
   FlatList,
   SafeAreaView,
   Dimensions,
+  Alert,
 } from "react-native";
 import {
   Button,
@@ -39,6 +40,7 @@ export default function Home({ navigation }) {
   const [searchInput, setSearchInput] = useState("");
   const [listingsData, setListingsData] = useState([]);
   const [categoriesData, setCategoriesData] = useState([]);
+  const [locationData, setLocationData] = useState([]);
   const [initial, setInitial] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [searchData, setSearchData] = useState(() => {
@@ -58,6 +60,7 @@ export default function Home({ navigation }) {
   function getData() {
     handleLoadCategoriesData();
     handleLoadListingsData();
+    handleLoadLocationData();
     if (listingsData !== null && categoriesData !== null)
       setTimeout(() => setIsLoading(false), 500);
   }
@@ -89,6 +92,19 @@ export default function Home({ navigation }) {
       })
       .catch((error) => {
         console.log(error);
+      });
+  }
+
+  function handleLoadLocationData() {
+    api
+      .get("locations")
+      .then((res) => {
+        if (res.ok) {
+          setLocationData(res.data);
+        }
+      })
+      .catch((error) => {
+        Alert.alert(error);
       });
   }
 
@@ -131,6 +147,10 @@ export default function Home({ navigation }) {
     setRefreshing(true);
     setInitial(true);
     setIsLoading(true);
+  }
+
+  function handleSelectLocation() {
+    navigation.navigate("Select Location", { locationData });
   }
 
   const renderCategoriesList = useCallback(
@@ -286,6 +306,7 @@ export default function Home({ navigation }) {
               mode="outlined"
               textColor={COLORS.black}
               style={styles.locationBtn}
+              onPress={() => handleSelectLocation()}
             >
               <Image source={require("../assets/pin.png")} />
               <Text>Location</Text>
@@ -337,7 +358,11 @@ export default function Home({ navigation }) {
           <View style={[styles.categoriesTitle, { height: 40 }]}>
             <Text style={styles.bold}>Top Categories</Text>
             {(searchData.search !== "" || searchData.categories !== "") && (
-              <Button mode="text" textColor={COLORS.primary} onPress={() => handleReset()}>
+              <Button
+                mode="text"
+                textColor={COLORS.primary}
+                onPress={() => handleReset()}
+              >
                 Reset
               </Button>
             )}
