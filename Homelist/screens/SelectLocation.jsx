@@ -1,24 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View, Text, Alert, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Text, Alert } from "react-native";
 
-import { Button, List } from "react-native-paper";
+import { Button, List, ActivityIndicator } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 import { COLORS } from "../variables/color";
 import api from "../api/client";
 
 export default function SelectLocation({ route, navigation }) {
-  //const [initial, setInitial] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [locationData, setLocationData] = useState([
-    ...route.params.locationData,
-  ]);
-  const [childLocationData, setChildLocationData] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  const [locationData, setLocationData] = useState([...route.params.data]);
 
   useEffect(() => {
     handleLoadLocationChild();
-    //setChildLocationData(locationData);
-    //setIsLoading(false);
-  }, [isLoading]);
+  }, []);
 
   function handleLoadLocationChild() {
     for (let i = 0; i < locationData.length; i++) {
@@ -27,7 +22,15 @@ export default function SelectLocation({ route, navigation }) {
         .then((res) => {
           if (res.ok) {
             if (res.data.length) {
-              locationData[i].child = res.data;
+              setLocationData((prevLocationData) => {
+                const newData = [...prevLocationData];
+                let test = newData.filter(
+                  (item) => item.term_id === res.data[0].parent
+                )[0];
+                test.child = res.data;
+                return newData;
+              });
+              setIsLoading(false);
             }
           }
         })
@@ -35,7 +38,12 @@ export default function SelectLocation({ route, navigation }) {
           Alert.alert(error);
         });
     }
-    setTimeout(()=>{setIsLoading(false);}, 3000);    
+  }
+
+  function handleSelectLocation(location) {
+    if (route.params.type === "search") {
+      navigation.navigate("home", { location });
+    }
   }
 
   const LocationItem = ({ item }) => {
@@ -43,12 +51,30 @@ export default function SelectLocation({ route, navigation }) {
       <>
         {item?.child ? (
           <List.Accordion title={item.name}>
+            <List.Item
+              title={["\t", "All"].join("")}
+              key={item.term_id}
+              onPress={() => {
+                handleSelectLocation(item);
+              }}
+            />
             {item.child.map((itemChild) => (
-              <List.Item title={itemChild.name} key={itemChild.term_id} />
+              <List.Item
+                title={["\t", itemChild.name].join("")}
+                key={itemChild.term_id}
+                onPress={() => {
+                  handleSelectLocation(itemChild);
+                }}
+              />
             ))}
           </List.Accordion>
         ) : (
-          <List.Item title={item.name} />
+          <List.Item
+            title={item.name}
+            onPress={() => {
+              handleSelectLocation(item);
+            }}
+          />
         )}
       </>
     );
@@ -64,7 +90,7 @@ export default function SelectLocation({ route, navigation }) {
         />
       ) : (
         <>
-          {locationData.map((item) => (
+          {locationData?.map((item) => (
             <LocationItem item={item} key={item.term_id} />
           ))}
         </>
