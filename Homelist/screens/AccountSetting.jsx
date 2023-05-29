@@ -11,12 +11,22 @@ import {
 import { COLORS } from "../variables/color";
 import { Divider } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useStateValue } from "../StateProvider";
 
 export default function AccountSetting({ route, navigation }) {
+  const [{ user }, dispatch] = useStateValue();
+
   function handleLogout() {
     removeData();
+    dispatch({
+      type: "SET_AUTH_DATA",
+      data: {
+        user: null,
+        auth_token: null,
+      },
+    });
     navigation.goBack();
-  };
+  }
 
   const removeData = async () => {
     try {
@@ -30,12 +40,14 @@ export default function AccountSetting({ route, navigation }) {
     <ScrollView style={styles.container}>
       <TouchableOpacity style={styles.actionBtn}>
         <Text>Email</Text>
-        <Text style={styles.orange}>{route?.params?.userData.email}</Text>
+        <Text style={styles.orange}>{route?.params?.user.email}</Text>
       </TouchableOpacity>
       <Divider />
       <TouchableOpacity style={styles.actionBtn}>
         <Text>Mobile Phonenumber</Text>
-        <Text style={styles.orange}>{route?.params?.userData ? route.params.userData.phone : 'Add'}</Text>
+        <Text style={styles.orange}>
+          {route?.params?.user ? route.params.user.phone : "Add"}
+        </Text>
       </TouchableOpacity>
       <Divider />
       <TouchableOpacity style={styles.actionBtn}>
@@ -54,7 +66,6 @@ export default function AccountSetting({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //backgroundColor: COLORS.white,
   },
   actionBtn: {
     height: 60,

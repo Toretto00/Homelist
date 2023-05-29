@@ -13,11 +13,10 @@ import {
 
 import { Button, HelperText, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decode } from "html-entities";
 
 import { COLORS } from "../variables/color";
-
 import api from "../api/client";
+import { useStateValue } from "../StateProvider";
 
 export default function Login({ navigation }) {
   const [userName, setUserName] = useState("");
@@ -25,6 +24,7 @@ export default function Login({ navigation }) {
   const [hidePassword, setHidePassword] = useState(true);
   const [disabledLoginBtn, setdisableLoginBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [{}, dispatch] = useStateValue();
 
   useEffect(() => {
     if (userName !== "" && password !== "") {
@@ -36,6 +36,7 @@ export default function Login({ navigation }) {
 
   function handleLogin() {
     Keyboard.dismiss();
+    setIsLoading(true);
     api
       .post("login", {
         username: userName,
@@ -43,11 +44,16 @@ export default function Login({ navigation }) {
       })
       .then((res) => {
         if (res.ok) {
-          storeUserData(res.data.user);
-          setIsLoading(true);
-          setTimeout(() => {
-            navigation.pop();
-          }, 1000);
+          storeUserData(res.data);
+          dispatch({
+            type: "SET_AUTH_DATA",
+            data: {
+              user: res.data.user,
+              auth_token: res.data.jwt_token,
+            },
+          });
+          setIsLoading(false);
+          navigation.pop();
         } else {
           Alert.alert(res.data.message);
         }
