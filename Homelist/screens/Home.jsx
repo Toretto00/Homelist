@@ -433,7 +433,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: ((screenWidth - 24) / 8) * 2,
     height: 60,
-    borderRadius: 4,
   },
   searchBar: {
     width: ((screenWidth - 24) / 8) * 6,
@@ -441,7 +440,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderColor: COLORS.text_gray,
     borderWidth: 1,
-    borderRadius: 4,
   },
   margin8: {
     marginTop: 8,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   StyleSheet,
@@ -24,46 +24,27 @@ import { COLORS } from "../variables/color";
 import Header from "../components/Header";
 import LoginRequest from "../components/LoginRequest";
 import Icon from "react-native-vector-icons/FontAwesome";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decode } from "html-entities";
+import { useStateValue } from "../StateProvider";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("screen");
 
 export default function Account({ navigation }) {
   const [messages, setMessages] = useState(2);
-  const [userData, setUserData] = useState();
-
-  useEffect(() => {
-    const focusHandler = navigation.addListener("focus", () => {
-      getUserData();
-    });
-    return focusHandler;
-  }, [navigation]);
-
-  const getUserData = async () => {
-    try {
-      await AsyncStorage.getItem("@userData").then((res) => {
-        var obj = JSON.parse(res);
-        setUserData(obj);
-      });
-    } catch (e) {
-      Alert.alert(e);
-    }
-  };
+  const [{user}, dispatch] = useStateValue();
 
   return (
     <View style={styles.container}>
       <Header />
-      {userData && (
+      {user && (
         <View>
           <ImageBackground
             source={require("../assets/account_header.png")}
             resizeMode="contain"
             style={styles.userAvatarContainer}
           >
-            <Avatar.Image size={80} source={{ uri: userData.pp_thumb_url }} />
+            <Avatar.Image size={80} source={{ uri: user.pp_thumb_url }} />
             <Text style={styles.text}>
-              {[userData.first_name, userData.last_name].join(" ")}
+              {[user.first_name, user.last_name].join(" ")}
             </Text>
           </ImageBackground>
           <View style={styles.userActions}>
@@ -126,7 +107,7 @@ export default function Account({ navigation }) {
                   flexDirection: "column",
                   width: screenWidth / 4,
                 }}
-                onPress={() => navigation.navigate("Settings", {userData})}
+                onPress={() => navigation.navigate("Settings", {user})}
               >
                 <Text>Setting</Text>
               </Button>
@@ -152,7 +133,7 @@ export default function Account({ navigation }) {
           </View>
         </View>
       )}
-      {!userData && <LoginRequest navigation={navigation} />}
+      {!user && <LoginRequest navigation={navigation} />}
     </View>
   );
 }

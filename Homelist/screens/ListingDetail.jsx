@@ -36,28 +36,40 @@ export default function ListingDetail({ route, navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [listingData, setListingData] = useState();
   const [initial, setInitial] = useState(true);
+  const [amenities, setAmenities] = useState([]);
 
   const listImages = [];
-  const amenities = [];
   const customField = [];
 
   useEffect(() => {
+    if (!initial) return;
     handleLoadListingData();
-  }, []);
+  }, [initial]);
 
   useEffect(() => {
     handleLoadImages();
-  });
-
-  useEffect(() => {
-    getCustomField();
-    setTimeout(() => setIsLoading(false), 1000);
-  }, []);
+  }, [listImages]);
 
   function handleLoadListingData() {
     api.get(`/listings/${route.params.listingId}`).then((res) => {
       if (res.ok) {
         setListingData(res.data);
+        res.data.custom_fields[0].value.map((amenity) => {
+          for (
+            let i = 0;
+            i < res.data.custom_fields[0].options.choices.length;
+            i++
+          ) {
+            if (amenity === res.data.custom_fields[0].options.choices[i].id)
+            setAmenities((prev)=>{
+              const newData = [...prev];
+              newData.push(res.data.custom_fields[0].options.choices[i].name);
+              return newData;
+            })
+          }
+        });
+        setInitial(false);
+        setIsLoading(false);
       }
     });
   }
@@ -102,11 +114,16 @@ export default function ListingDetail({ route, navigation }) {
               onPress={() => navigation.pop()}
             />
             <View style={{ flexDirection: "row" }}>
-              <IconButton icon="share-variant" containerColor={COLORS.white} />
+              <IconButton
+                icon="share-variant"
+                containerColor={COLORS.white}
+                disabled={true}
+              />
               <IconButton
                 icon={isFavorite ? "cards-heart" : "cards-heart-outline"}
                 containerColor={COLORS.white}
                 onPress={() => setIsFavorite(!isFavorite)}
+                disabled={true}
               />
             </View>
           </View>
@@ -125,7 +142,10 @@ export default function ListingDetail({ route, navigation }) {
             <Text style={[styles.priceType, styles.textGray]}>
               {listingData?.price_type}
             </Text>
-            <Card mode="outlined" style={{ margin: 8 , backgroundColor: COLORS.white}}>
+            <Card
+              mode="outlined"
+              style={{ margin: 8, backgroundColor: COLORS.white }}
+            >
               <Card.Content>
                 <View
                   style={{
@@ -172,8 +192,8 @@ export default function ListingDetail({ route, navigation }) {
                 margin: 8,
               }}
             >
-              {listingData?.custom_fields[0].options.choices.map((item) => (
-                <View key={item.id}>
+              {amenities.map((item, index) => (
+                <View key={index}>
                   <View
                     style={[
                       {
@@ -185,7 +205,7 @@ export default function ListingDetail({ route, navigation }) {
                   >
                     <FontAwesome name="check" color={COLORS.primary} />
                     <Text style={[styles.textGray, { marginLeft: 4 }]}>
-                      {item.name}
+                      {item}
                     </Text>
                   </View>
                 </View>
@@ -194,7 +214,7 @@ export default function ListingDetail({ route, navigation }) {
             <Text style={{ fontWeight: "bold", fontSize: 16, margin: 8 }}>
               Description
             </Text>
-            <Card style={{backgroundColor: COLORS.bg_light}}>
+            <Card style={{ backgroundColor: COLORS.bg_light }}>
               <Card.Content>
                 {!isExpand ? (
                   <Text>{listingData?.description.slice(0, 100)}...</Text>
@@ -211,25 +231,41 @@ export default function ListingDetail({ route, navigation }) {
               </Card.Content>
             </Card>
           </ScrollView>
-          <View style={{ flexDirection: "row" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              margin: 8,
+            }}
+          >
             <Button
               mode="contained-tonal"
               icon="phone"
-              style={{ width: screenWidth / 3 }}
+              textColor={COLORS.primary}
+              buttonColor={COLORS.bg_primary}
+              style={{ width: (screenWidth - 32) / 3, borderRadius: 4 }}
+              disabled={true}
             >
               Call
             </Button>
             <Button
               mode="contained-tonal"
               icon="email"
-              style={{ width: screenWidth / 3 }}
+              textColor={COLORS.orange}
+              buttonColor="#fedeaf"
+              style={{ width: (screenWidth - 32) / 3, borderRadius: 4 }}
+              disabled={true}
             >
               Email
             </Button>
             <Button
               mode="contained-tonal"
               icon="chat"
-              style={{ width: screenWidth / 3 }}
+              textColor={COLORS.dodgerblue}
+              buttonColor="#d7d6ff"
+              style={{ width: (screenWidth - 32) / 3, borderRadius: 4 }}
+              disabled={true}
             >
               Chat
             </Button>

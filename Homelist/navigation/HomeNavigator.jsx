@@ -15,10 +15,31 @@ import SelectLocation from "../screens/SelectLocation";
 import TabNavigator from "./TabNavigator";
 import DrawerNavigator from "./DrawerNavigator";
 import { COLORS } from "../variables/color";
+import { useStateValue } from "../StateProvider";
+import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 
 export default function HomeNavigator() {
+  const [{}, dispatch] = useStateValue();
+
+  useEffect(()=>{
+    getUserData();
+  },[]);
+
+  const getUserData = async () => {
+    const obj = await AsyncStorage.getItem("@userData");
+    if(!obj) return;
+    dispatch({
+      type: "SET_AUTH_DATA",
+      data: {
+        user: JSON.parse(obj).user,
+        auth_token: JSON.parse(obj).jwt_token,
+      },
+    });
+  };
+
   return (
     <Stack.Navigator
       screenOptions={{

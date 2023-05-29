@@ -1,32 +1,19 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import HomeNavigator from './navigation/HomeNavigator';
-import TabNavigator from './navigation/TabNavigator';
+import HomeNavigator from "./navigation/HomeNavigator";
 
-import Home from './screens/Home';
-import Search from './screens/Search';
-import AdNew from './screens/AdNew';
-import Chats from './screens/Chats';
-import Account from './screens/Account';
+import { StateProvider } from "./StateProvider";
+import reducer, { initialState } from "./reducer";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <HomeNavigator/>
-    </NavigationContainer>
+    <StateProvider initialState={initialState} reducer={reducer}>
+      <NavigationContainer>
+        <HomeNavigator />
+      </NavigationContainer>
+    </StateProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
