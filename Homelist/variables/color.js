@@ -11,6 +11,7 @@ export const COLORS = {
     text_gray: '#838383',
     orange: "#ff6600",
     bg_light: "#f9f9f9",
+    bg_dark: "#f0f0f0",
     dodgerblue: "dodgerblue",
     orange: "#ff6600",
 };

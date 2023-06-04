@@ -49,7 +49,8 @@ export default function Home({ route, navigation }) {
   });
   //const [refreshing, setRefreshing] = useState(false);
 
-  const search_location = route?.params?.location.term_id;
+  const search_location = route?.params?.location?.term_id;
+  var newSearchData = route?.params?.filterCustoms;
 
   useEffect(() => {
     if (!initial) return;
@@ -92,11 +93,23 @@ export default function Home({ route, navigation }) {
 
   useEffect(() => {
     if (!searchData) return;
+    if(newSearchData)
+      newSearchData = null;
     handleLoadListingsData();
   }, [searchData]);
 
+  useEffect(() => {
+    if (!newSearchData) return;
+    setIsLoading(true);
+    //setSearchData(newSearchData);
+    handleLoadListingsData();
+  }, [newSearchData]);
+
   function handleLoadListingsData() {
-    const args = { ...searchData };
+    var args = { ...searchData };
+    if(newSearchData){
+      args = newSearchData;
+    }
     api
       .get("listings", args)
       .then((res) => {
@@ -330,7 +343,7 @@ export default function Home({ route, navigation }) {
             <Text style={styles.bold}>Top Categories</Text>
             {(searchData.search !== "" ||
               searchData.categories !== "" ||
-              searchData.locations !== "") && (
+              searchData.locations !== "" || route?.params?.filterCustoms) && (
               <Button
                 mode="text"
                 textColor={COLORS.primary}

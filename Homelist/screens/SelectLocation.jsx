@@ -45,6 +45,8 @@ export default function SelectLocation({ route, navigation }) {
       navigation.navigate("home", { location });
     } else if (route.params.type === "adnew") {
       navigation.navigate("adnew", { location });
+    } else if (route.params.type === "filter") {
+      navigation.navigate("search", { location });
     }
   }
 
