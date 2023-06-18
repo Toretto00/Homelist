@@ -18,6 +18,11 @@ import { COLORS } from "../variables/color";
 import api from "../api/client";
 import { useStateValue } from "../StateProvider";
 
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+
+WebBrowser.maybeCompleteAuthSession();
+
 export default function Login({ navigation }) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +30,60 @@ export default function Login({ navigation }) {
   const [disabledLoginBtn, setdisableLoginBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [{}, dispatch] = useStateValue();
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId:
+      "717769749599-89rsi1huno12e61njko2re3d095nccbb.apps.googleusercontent.com",
+    androidClientId:
+      "717769749599-r9apatihugtanr0dqkkh1k449kq08kis.apps.googleusercontent.com",
+    iosClientId:
+      "717769749599-t6qfijl2dkdic07kohsvgctc4ulnpvti.apps.googleusercontent.com",
+  });
+
+  const [token, setToken] = useState("");
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      setToken(response.authentication.accessToken);
+      token && getUserInfo();
+      console.log(response);
+    }
+  }, [response, token]);
+
+  const getUserInfo = async () => {
+    try {
+      const response = await fetch(
+        "https://www.googleapis.com/userinfo/v2/me",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const user = await response.json();
+      console.log(user);
+      console.log(response.authentication);
+      //setUserInfo(user);
+    } catch (error) {
+      // Add your own error handler here
+    }
+  };
+
+  const handleSocialSignIn = () => {
+    if (!token) return;
+    api
+      .post("social-login", {
+        access_token: token,
+        type: "google_firebase",
+      })
+      .then((res) => {
+        if (res.ok) {
+          console.log(res.data);
+        }
+        else {
+          console.log(res.status)
+        }
+      });
+  };
 
   useEffect(() => {
     if (userName !== "" && password !== "") {
@@ -165,6 +224,10 @@ export default function Login({ navigation }) {
               buttonColor={COLORS.redGoogle}
               icon="google"
               textColor={COLORS.white}
+              disabled={!request}
+              onPress={() => {
+                promptAsync();
+              }}
             >
               Login with Google
             </Button>

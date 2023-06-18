@@ -26,7 +26,8 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "sdkVersion": "48.0.0"
+    "sdkVersion": "48.0.0",
+    "scheme": "Homelist"
   },
   "name": "homelist"
 }

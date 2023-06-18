@@ -62,7 +62,6 @@ export default function Search({ navigation, route }) {
   }, [route?.params?.location]);
 
   useEffect(() => {
-    console.log(filterCustoms);
     if (filterCustoms !== null) {
       setDisable(false);
     } else {
@@ -232,6 +231,7 @@ export default function Search({ navigation, route }) {
                       {item.options?.choices.map((element) => (
                         <RadioButton.Item
                           key={element.id}
+                          mode="android"
                           label={element.name}
                           value={element.id}
                           color={COLORS.primary}
