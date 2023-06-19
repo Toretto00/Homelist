@@ -15,19 +15,21 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier" : "com.tpblog.Homelist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package" : "com.tpblog.Homelist"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "sdkVersion": "48.0.0",
-    "scheme": "Homelist"
+    "scheme": ["Homelist", "fb257265403564135"]
   },
   "name": "homelist"
 }
