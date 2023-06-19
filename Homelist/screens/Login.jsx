@@ -9,17 +9,21 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Alert,
+  Platform,
 } from "react-native";
 
 import { Button, HelperText, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { COLORS } from "../variables/color";
-import api from "../api/client";
+import api, { setAuthToken } from "../api/client";
 import { useStateValue } from "../StateProvider";
 
-import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
+import * as Facebook from "expo-auth-session/providers/facebook";
+import * as AppleAthentication from "expo-apple-authentication";
+import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,58 +33,151 @@ export default function Login({ navigation }) {
   const [hidePassword, setHidePassword] = useState(true);
   const [disabledLoginBtn, setdisableLoginBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [{}, dispatch] = useStateValue();
+  const [{ push_token }, dispatch] = useStateValue();
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId:
-      "717769749599-89rsi1huno12e61njko2re3d095nccbb.apps.googleusercontent.com",
-    androidClientId:
-      "717769749599-r9apatihugtanr0dqkkh1k449kq08kis.apps.googleusercontent.com",
-    iosClientId:
-      "717769749599-t6qfijl2dkdic07kohsvgctc4ulnpvti.apps.googleusercontent.com",
-  });
+  // const [request, response, promptAsync] = Google.useAuthRequest({
+  //   expoClientId:
+  //     "717769749599-89rsi1huno12e61njko2re3d095nccbb.apps.googleusercontent.com",
+  //   androidClientId:
+  //     "717769749599-r9apatihugtanr0dqkkh1k449kq08kis.apps.googleusercontent.com",
+  //   iosClientId:
+  //     "717769749599-t6qfijl2dkdic07kohsvgctc4ulnpvti.apps.googleusercontent.com",
+  // });
 
-  const [token, setToken] = useState("");
-  const [userInfo, setUserInfo] = useState(null);
+  // const [token, setToken] = useState("");
+  // const [userInfo, setUserInfo] = useState(null);
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      setToken(response.authentication.accessToken);
-      token && getUserInfo();
-      console.log(response);
-    }
-  }, [response, token]);
+  // useEffect(() => {
+  //   if (response?.type === "success") {
+  //     setToken(response.authentication.accessToken);
+  //     token && getUserInfo();
+  //     console.log(response);
+  //   }
+  // }, [response, token]);
 
-  const getUserInfo = async () => {
-    try {
-      const response = await fetch(
-        "https://www.googleapis.com/userinfo/v2/me",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const user = await response.json();
-      console.log(user);
-      console.log(response.authentication);
-      //setUserInfo(user);
-    } catch (error) {
-      // Add your own error handler here
+  // const getUserInfo = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://www.googleapis.com/userinfo/v2/me",
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     const user = await response.json();
+  //     console.log(user);
+  //     console.log(response.authentication);
+  //     //setUserInfo(user);
+  //   } catch (error) {
+  //     // Add your own error handler here
+  //   }
+  // };
+
+  const [requestFacebook, responseFacebook, promptAsyncFacebook] =
+    Facebook.useAuthRequest({
+      clientId: "257265403564135",
+    });
+
+  const handleFacebookLogin = async () => {
+    const result = await promptAsyncFacebook();
+    if (result.type !== "success") {
+      alert("Uh oh, something went wrong");
+      return;
+    } else {
+      setIsLoading(true);
+      handleSocialLogin(result.authentication.accessToken, "facebook");
     }
   };
 
-  const handleSocialSignIn = () => {
-    if (!token) return;
+  const handleSocialLogin = (accessToken, type) => {
+    if (!accessToken && !type) {
+      setIsLoading(false);
+      return;
+    }
     api
       .post("social-login", {
-        access_token: token,
-        type: "google_firebase",
+        access_token: accessToken,
+        type: type,
       })
       .then((res) => {
         if (res.ok) {
-          console.log(res.data);
+          storeUserData(res.data);
+          dispatch({
+            type: "SET_AUTH_DATA",
+            data: {
+              user: res.data.user,
+              auth_token: res.data.jwt_token,
+            },
+          });
+          handlePushRegister(res.data.jwt_token);
+          setIsLoading(false);
+          navigation.pop();
+        } else {
+          Alert.alert(res.data.error_message);
         }
-        else {
-          console.log(res.status)
+      });
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAthentication.signInAsync({
+        requestedScopes: [
+          AppleAthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (credential?.identityToken && credential?.user) {
+        setIsLoading(true);
+        api
+          .post("social-login", {
+            access_token: credential.identityToken,
+            type: "apple",
+            apple_user: credential.user,
+          })
+          .then((res) => {
+            if (res.ok) {
+              storeUserData(res.data);
+              dispatch({
+                type: "SET_AUTH_DATA",
+                data: {
+                  user: res.data.user,
+                  auth_token: res.data.jwt_token,
+                },
+              });
+              setIsLoading(false);
+              navigation.pop();
+            } else {
+              Alert.alert(res.data.error_message);
+            }
+          });
+      }
+    } catch (error) {
+      Alert.alert(error.code);
+    }
+  };
+
+  const handlePushRegister = (a_token) => {
+    setAuthToken(a_token);
+    //const tempArgs = { push_token: push_token };
+    // let nCon = [];
+    // if (appSettings?.notifications?.length) {
+    //   appSettings.notifications.map((_item) => {
+    //     if (config.pn_events.includes(_item)) {
+    //       nCon.push(_item);
+    //     }
+    //   });
+    // }
+    api
+      .post("push-notification/register", {
+        push_token: push_token,
+        //events: nCon,
+      })
+      .then((res) => {
+        if (!res?.ok) {
+          // alert("Failed to register device for push notification");
+          console.log(
+            __("alerts.notificationRegistrationFail", appSettings.lng),
+            res.data
+          );
         }
       });
   };
@@ -199,14 +296,17 @@ export default function Login({ navigation }) {
             <Text>Or login with</Text>
           </View>
           <View style={styles.margin}>
-            <Button
-              mode="contain"
-              buttonColor={COLORS.black}
-              icon="apple"
-              textColor={COLORS.white}
-            >
-              Login with Apple
-            </Button>
+            {Platform.OS === "ios" && (
+              <Button
+                mode="contain"
+                buttonColor={COLORS.black}
+                icon="apple"
+                textColor={COLORS.white}
+                onPress={() => handleAppleLogin()}
+              >
+                Login with Apple
+              </Button>
+            )}
           </View>
           <View style={styles.margin}>
             <Button
@@ -214,6 +314,7 @@ export default function Login({ navigation }) {
               buttonColor={COLORS.blueFacebook}
               icon="facebook"
               textColor={COLORS.white}
+              onPress={() => handleFacebookLogin()}
             >
               Login with Facebook
             </Button>
@@ -224,10 +325,10 @@ export default function Login({ navigation }) {
               buttonColor={COLORS.redGoogle}
               icon="google"
               textColor={COLORS.white}
-              disabled={!request}
-              onPress={() => {
-                promptAsync();
-              }}
+              // disabled={!request}
+              // onPress={() => {
+              //   promptAsync({ useProxy: true });
+              // }}
             >
               Login with Google
             </Button>
