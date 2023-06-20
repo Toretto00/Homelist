@@ -33,44 +33,28 @@ export default function Login({ navigation }) {
   const [hidePassword, setHidePassword] = useState(true);
   const [disabledLoginBtn, setdisableLoginBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [{ push_token }, dispatch] = useStateValue();
+  const [{}, dispatch] = useStateValue();
 
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   expoClientId:
-  //     "717769749599-89rsi1huno12e61njko2re3d095nccbb.apps.googleusercontent.com",
-  //   androidClientId:
-  //     "717769749599-r9apatihugtanr0dqkkh1k449kq08kis.apps.googleusercontent.com",
-  //   iosClientId:
-  //     "717769749599-t6qfijl2dkdic07kohsvgctc4ulnpvti.apps.googleusercontent.com",
-  // });
+  const [googleRequest, googleResponse, promptAsyncGoogle] =
+    Google.useAuthRequest({
+      expoClientId:
+        "717769749599-89rsi1huno12e61njko2re3d095nccbb.apps.googleusercontent.com",
+      androidClientId:
+        "717769749599-r9apatihugtanr0dqkkh1k449kq08kis.apps.googleusercontent.com",
+      iosClientId:
+        "717769749599-t6qfijl2dkdic07kohsvgctc4ulnpvti.apps.googleusercontent.com",
+    });
 
-  // const [token, setToken] = useState("");
-  // const [userInfo, setUserInfo] = useState(null);
-
-  // useEffect(() => {
-  //   if (response?.type === "success") {
-  //     setToken(response.authentication.accessToken);
-  //     token && getUserInfo();
-  //     console.log(response);
-  //   }
-  // }, [response, token]);
-
-  // const getUserInfo = async () => {
-  //   try {
-  //     const response = await fetch(
-  //       "https://www.googleapis.com/userinfo/v2/me",
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     const user = await response.json();
-  //     console.log(user);
-  //     console.log(response.authentication);
-  //     //setUserInfo(user);
-  //   } catch (error) {
-  //     // Add your own error handler here
-  //   }
-  // };
+  const handleGoogleLogin = async () => {
+    const result = await promptAsyncGoogle();
+    if (result.type !== "success") {
+      alert("Uh oh, something went wrong");
+      return;
+    } else {
+      setIsLoading(true);
+      handleSocialLogin(result.authentication.accessToken, "google_firebase");
+    }
+  };
 
   const [requestFacebook, responseFacebook, promptAsyncFacebook] =
     Facebook.useAuthRequest({
@@ -86,35 +70,6 @@ export default function Login({ navigation }) {
       setIsLoading(true);
       handleSocialLogin(result.authentication.accessToken, "facebook");
     }
-  };
-
-  const handleSocialLogin = (accessToken, type) => {
-    if (!accessToken && !type) {
-      setIsLoading(false);
-      return;
-    }
-    api
-      .post("social-login", {
-        access_token: accessToken,
-        type: type,
-      })
-      .then((res) => {
-        if (res.ok) {
-          storeUserData(res.data);
-          dispatch({
-            type: "SET_AUTH_DATA",
-            data: {
-              user: res.data.user,
-              auth_token: res.data.jwt_token,
-            },
-          });
-          handlePushRegister(res.data.jwt_token);
-          setIsLoading(false);
-          navigation.pop();
-        } else {
-          Alert.alert(res.data.error_message);
-        }
-      });
   };
 
   const handleAppleLogin = async () => {
@@ -155,29 +110,30 @@ export default function Login({ navigation }) {
     }
   };
 
-  const handlePushRegister = (a_token) => {
-    setAuthToken(a_token);
-    //const tempArgs = { push_token: push_token };
-    // let nCon = [];
-    // if (appSettings?.notifications?.length) {
-    //   appSettings.notifications.map((_item) => {
-    //     if (config.pn_events.includes(_item)) {
-    //       nCon.push(_item);
-    //     }
-    //   });
-    // }
+  const handleSocialLogin = (accessToken, type) => {
+    if (!accessToken && !type) {
+      setIsLoading(false);
+      return;
+    }
     api
-      .post("push-notification/register", {
-        push_token: push_token,
-        //events: nCon,
+      .post("social-login", {
+        access_token: accessToken,
+        type: type,
       })
       .then((res) => {
-        if (!res?.ok) {
-          // alert("Failed to register device for push notification");
-          console.log(
-            __("alerts.notificationRegistrationFail", appSettings.lng),
-            res.data
-          );
+        if (res.ok) {
+          storeUserData(res.data);
+          dispatch({
+            type: "SET_AUTH_DATA",
+            data: {
+              user: res.data.user,
+              auth_token: res.data.jwt_token,
+            },
+          });
+          setIsLoading(false);
+          navigation.pop();
+        } else {
+          Alert.alert(res.data.error_message);
         }
       });
   };
@@ -325,10 +281,9 @@ export default function Login({ navigation }) {
               buttonColor={COLORS.redGoogle}
               icon="google"
               textColor={COLORS.white}
-              // disabled={!request}
-              // onPress={() => {
-              //   promptAsync({ useProxy: true });
-              // }}
+              onPress={() => {
+                handleGoogleLogin();
+              }}
             >
               Login with Google
             </Button>
